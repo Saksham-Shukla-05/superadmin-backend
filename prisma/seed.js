@@ -5,18 +5,33 @@ const prisma = new PrismaClient();
 async function main() {
   const hashedPassword = await bcrypt.hash("Test1234!", 10);
 
-  await prisma.user.create({
-    data: {
-      name: "Super Admin",
-      email: "superadmin@example.com",
-      password: hashedPassword,
-      roles: {
-        create: [{ name: "superadmin", permissions: ["*"] }],
-      },
-    },
+  // check if superadmin already exists
+  const existing = await prisma.user.findUnique({
+    where: { email: "superadmin@example.com" },
   });
 
-  console.log("✅ Super Admin seeded!");
+  if (!existing) {
+    await prisma.user.create({
+      data: {
+        name: "Super Admin",
+        email: "superadmin@example.com",
+        password: hashedPassword,
+        roles: {
+          create: {
+            role: {
+              create: {
+                name: "superadmin",
+                permissions: ["*"],
+              },
+            },
+          },
+        },
+      },
+    });
+    console.log("✅ Super Admin seeded!");
+  } else {
+    console.log("⚠️ Super Admin already exists, skipping seed.");
+  }
 }
 
 main()

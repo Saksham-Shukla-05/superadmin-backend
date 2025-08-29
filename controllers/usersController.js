@@ -1,9 +1,9 @@
 const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("@prisma/client");
-
+const { logAction } = require("../utils/auditLogger");
 const prisma = new PrismaClient();
 
-// ✅ GET all users
+//  GET all users
 async function getUsers(req, res) {
   try {
     const users = await prisma.user.findMany({
@@ -16,7 +16,7 @@ async function getUsers(req, res) {
   }
 }
 
-// ✅ GET user by ID
+//  GET user by ID
 async function getUserById(req, res) {
   try {
     const user = await prisma.user.findUnique({
@@ -31,18 +31,21 @@ async function getUserById(req, res) {
   }
 }
 
-// ✅ CREATE user
+//  CREATE user
 async function createUser(req, res) {
   try {
     const { name, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+      data: { name, email, password: hashedPassword },
+    });
+
+    await logAction({
+      action: "CREATE_USER",
+      entity: "user",
+      entityId: newUser.id,
+      performedBy: req.user.id,
     });
 
     res.status(201).json(newUser);
@@ -51,20 +54,25 @@ async function createUser(req, res) {
     res.status(500).json({ error: "Failed to create user" });
   }
 }
-
-// ✅ UPDATE user
+//  UPDATE user
 async function updateUser(req, res) {
   try {
     const { name, email, password } = req.body;
-    const data = { name, email };
-
-    if (password) {
-      data.password = await bcrypt.hash(password, 10);
-    }
+    const data = {};
+    if (name) data.name = name;
+    if (email) data.email = email;
+    if (password) data.password = await bcrypt.hash(password, 10);
 
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(req.params.id) },
       data,
+    });
+
+    await logAction({
+      action: "UPDATE_USER",
+      entity: "user",
+      entityId: updatedUser.id,
+      performedBy: req.user.id,
     });
 
     res.json(updatedUser);
@@ -74,12 +82,20 @@ async function updateUser(req, res) {
   }
 }
 
-// ✅ DELETE user
+//  DELETE user
 async function deleteUser(req, res) {
   try {
-    await prisma.user.delete({
+    const deletedUser = await prisma.user.delete({
       where: { id: parseInt(req.params.id) },
     });
+
+    await logAction({
+      action: "DELETE_USER",
+      entity: "user",
+      entityId: deletedUser.id,
+      performedBy: req.user.id,
+    });
+
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     console.error("Error deleting user:", err);

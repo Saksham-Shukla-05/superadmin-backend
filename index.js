@@ -5,7 +5,7 @@ const { requireSuperadmin } = require("./middlewares/auth");
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
 const roleRoutes = require("./routes/roles");
-
+const auditLogRoutes = require("./routes/auditLogs");
 const app = express();
 app.use(express.json());
 
@@ -13,6 +13,7 @@ app.use(express.json());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/superadmin/users", userRoutes);
 app.use("/api/v1/superadmin/roles", roleRoutes);
+app.use("/api/v1/superadmin/audit-logs", auditLogRoutes);
 
 app.get("/", (req, res) => {
   res.send("SuperAdmin API Running 🚀");

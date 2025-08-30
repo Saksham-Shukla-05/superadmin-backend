@@ -39,6 +39,7 @@ async function createUser(req, res) {
 
     const newUser = await prisma.user.create({
       data: { name, email, password: hashedPassword },
+      include: { roles: { include: { role: true } } },
     });
 
     await logAction({
@@ -54,11 +55,13 @@ async function createUser(req, res) {
     res.status(500).json({ error: "Failed to create user" });
   }
 }
+
 //  UPDATE user
 async function updateUser(req, res) {
   try {
     const { name, email, password } = req.body;
     const data = {};
+
     if (name) data.name = name;
     if (email) data.email = email;
     if (password) data.password = await bcrypt.hash(password, 10);
@@ -66,6 +69,7 @@ async function updateUser(req, res) {
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(req.params.id) },
       data,
+      include: { roles: { include: { role: true } } },
     });
 
     await logAction({

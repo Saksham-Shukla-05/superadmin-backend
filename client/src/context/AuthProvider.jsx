@@ -6,7 +6,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("authToken");
+    const savedToken = localStorage.getItem("token");
     if (savedToken) {
       setToken(savedToken);
       setAuthToken(savedToken);
@@ -15,13 +15,13 @@ export function AuthProvider({ children }) {
 
   const login = (t) => {
     setToken(t);
-    localStorage.setItem("authToken", t);
+    localStorage.setItem("token", t);
     setAuthToken(t);
   };
 
   const logout = () => {
     setToken(null);
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     setAuthToken(null);
   };
 

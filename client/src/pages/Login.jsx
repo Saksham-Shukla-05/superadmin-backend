@@ -1,31 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
+import { useAuth } from "../hooks/useAuth";
+import api from "../utils/axiosInstance";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (auth.token) {
+      navigate("/dashboard");
+    }
+  }, [auth.token, navigate]); // include navigate in deps
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await axios.post("/api/v1/auth/login", {
-        email,
-        password,
-      });
+      const res = await api.post("/auth/login", { email, password });
+      const token = res.data.token;
 
-      localStorage.setItem("token", res.data.token);
+      auth.login(token);
+
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
       setError(err.response?.data?.error || "Login failed. Please try again.");
     }
   };
-
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
       <form
@@ -35,11 +42,9 @@ export default function Login() {
         <h2 className="text-2xl font-bold mb-4 text-center">
           SuperAdmin Login
         </h2>
-
         {error && (
           <p className="text-red-500 text-sm mb-3 text-center">{error}</p>
         )}
-
         <input
           type="email"
           placeholder="Email"
@@ -47,7 +52,6 @@ export default function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-
         <input
           type="password"
           placeholder="Password"
@@ -55,7 +59,6 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-
         <button
           type="submit"
           className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"

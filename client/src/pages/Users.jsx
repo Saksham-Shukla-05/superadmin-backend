@@ -102,7 +102,6 @@ export default function Users() {
 
   async function handleAssignRoles() {
     if (!currentUserForRole) return;
-    console.log("Assigning role:", currentUserForRole.id, selectedRoles[0]);
 
     try {
       await api.post("/superadmin/roles/assign-role", {

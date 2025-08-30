@@ -11,7 +11,7 @@ async function getAuditLogs(req, res) {
     if (date) {
       const start = new Date(date);
       const end = new Date(date);
-      end.setDate(end.getDate() + 1); // include whole day
+      end.setDate(end.getDate() + 1);
       filters.createdAt = {
         gte: start,
         lt: end,

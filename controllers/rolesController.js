@@ -58,8 +58,6 @@ async function assignRole(req, res) {
   try {
     const { userId, roleId } = req.body;
 
-    console.log("********  at the assign role ******** ", userId, roleId);
-
     if (!roleId) {
       return res.status(400).json({ error: "roleId is required" });
     }
